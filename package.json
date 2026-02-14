@@ -1,0 +1,10 @@
+{
+  "name": "crypto-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard de criptomonedas con cotizaciones y RSI para Railway",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}
