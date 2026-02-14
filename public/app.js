@@ -124,7 +124,7 @@ async function fetchSymbolData(symbol) {
 
 async function renderTable() {
   if (!trackedSymbols.length) {
-    tableBody.innerHTML = '<tr><td colspan="5">No hay pares configurados.</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="6">No hay pares configurados.</td></tr>';
     statusEl.textContent = 'Agrega un par para empezar (ej: BTC o BTCUSDT).';
     return;
   }
@@ -139,7 +139,7 @@ async function renderTable() {
       if (result.status === 'rejected') {
         return `<tr>
           <td>${formatPair(symbol)}</td>
-          <td colspan="3">Error al cargar datos</td>
+          <td colspan="4">Error al cargar datos</td>
           <td><button data-remove="${symbol}">Quitar</button></td>
         </tr>`;
       }
@@ -153,6 +153,7 @@ async function renderTable() {
       return `<tr>
         <td>${item.pairLabel}</td>
         <td>$${item.price.toLocaleString('en-US', { maximumFractionDigits: 6 })}</td>
+        <td>$${item.dayOpen.toLocaleString('en-US', { maximumFractionDigits: 6 })}</td>
         <td class="${changeClass}">${changeText}</td>
         <td>${rsiBadge(item.rsi)}</td>
         <td><button data-remove="${item.symbol}">Quitar</button></td>

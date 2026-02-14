@@ -4,6 +4,7 @@ Aplicación web sencilla para monitorear pares de criptomonedas desde **Binance*
 
 - Precio actual en USD (pares `*USDT`).
 - Variación 1D (precio actual vs apertura de la vela diaria actual).
+- Columna visible con **Apertura 1D** para auditar el cálculo.
 - RSI 14 en temporalidad diaria (1D), calculado con cierres diarios.
 - Lista configurable de pares (agregar/quitar) guardada en `localStorage`.
 - Actualización automática configurable (15s, 30s o 60s).
