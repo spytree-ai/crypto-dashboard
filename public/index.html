@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Crypto Dashboard</h1>
+        <p>
+          Monitorea cotizaciones en USD y RSI (14 periodos) con temporalidad diaria (1D). Puedes agregar o
+          quitar criptomonedas cuando quieras.
+        </p>
+      </header>
+
+      <section class="controls">
+        <form id="crypto-form">
+          <input
+            id="crypto-input"
+            type="text"
+            placeholder="Ej: BTC, ETH, SOL o BTCUSDT"
+            aria-label="Símbolo de Binance"
+            required
+          />
+          <button type="submit">Agregar</button>
+        </form>
+
+        <div class="actions">
+          <button id="refresh-btn" type="button">Actualizar ahora</button>
+          <label>
+            Actualización automática
+            <select id="interval-select">
+              <option value="15">Cada 15s</option>
+              <option value="30" selected>Cada 30s</option>
+              <option value="60">Cada 60s</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <p id="status" class="status">Cargando datos...</p>
+
+      <section>
+        <table>
+          <thead>
+            <tr>
+              <th>Par (Binance)</th>
+              <th>Precio (USD)</th>
+              <th>1D</th>
+              <th>RSI 14</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="crypto-table-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
