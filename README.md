@@ -3,9 +3,10 @@
 Aplicación web sencilla para monitorear pares de criptomonedas desde **Binance** con:
 
 - Precio actual en USD (pares `*USDT`).
-- Variación 1D (precio actual vs apertura de la vela diaria actual).
-- Columna visible con **Apertura 1D** para auditar el cálculo.
-- RSI 14 en temporalidad diaria (1D), calculado con cierres diarios.
+- Vista multi-timeframe: **1D, 4H, 1H y 15m**.
+- RSI 14 para cada timeframe.
+- Detección de cruce de **MACD** en cada timeframe.
+- Detección de cruce de **EMA21/EMA50** en cada timeframe.
 - Lista configurable de pares (agregar/quitar) guardada en `localStorage`.
 - Actualización automática configurable (15s, 30s o 60s).
 
@@ -33,5 +34,5 @@ Abrir: `http://localhost:3000`
 
 - Puedes escribir `BTC`, `ETH`, `SOL` o el par completo `BTCUSDT`, `ETHUSDT`, etc.
 - La app normaliza entradas cortas a `USDT` (ej: `BTC` -> `BTCUSDT`).
-- El % mostrado es 1D: se calcula con `((lastPrice - openDiario)/openDiario)*100` usando velas `1d` de Binance.
+- En cada timeframe se muestran señales RSI/MACD/EMA para facilitar lectura técnica rápida.
 - Si el par no existe en Binance, verás "Error al cargar datos" en la tabla.

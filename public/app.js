@@ -1,5 +1,11 @@
 const defaultSymbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
 const storageKey = 'trackedSymbols';
+const timeframes = [
+  { label: '1D', interval: '1d' },
+  { label: '4H', interval: '4h' },
+  { label: '1H', interval: '1h' },
+  { label: '15m', interval: '15m' },
+];
 
 const form = document.getElementById('crypto-form');
 const input = document.getElementById('crypto-input');
@@ -66,70 +72,172 @@ function calculateRSI(prices, period = 14) {
   return 100 - 100 / (1 + rs);
 }
 
-function rsiBadge(rsiValue) {
-  if (rsiValue == null) return '<span class="badge">Sin datos</span>';
-  if (rsiValue > 70) return `<span class="badge overbought">${rsiValue.toFixed(2)} · Sobrecompra</span>`;
-  if (rsiValue < 30) return `<span class="badge oversold">${rsiValue.toFixed(2)} · Sobreventa</span>`;
-  return `<span class="badge neutral">${rsiValue.toFixed(2)} · Neutral</span>`;
+function calculateEMA(values, period) {
+  if (!Array.isArray(values) || values.length < period) {
+    return [];
+  }
+
+  const multiplier = 2 / (period + 1);
+  const result = [];
+  let ema = values.slice(0, period).reduce((sum, value) => sum + value, 0) / period;
+
+  for (let i = 0; i < values.length; i += 1) {
+    if (i < period - 1) {
+      result.push(null);
+      continue;
+    }
+
+    if (i === period - 1) {
+      result.push(ema);
+      continue;
+    }
+
+    ema = (values[i] - ema) * multiplier + ema;
+    result.push(ema);
+  }
+
+  return result;
+}
+
+function detectCross(prevA, currA, prevB, currB) {
+  if (![prevA, currA, prevB, currB].every(Number.isFinite)) {
+    return 'Sin datos';
+  }
+
+  const prevDiff = prevA - prevB;
+  const currDiff = currA - currB;
+
+  if (prevDiff <= 0 && currDiff > 0) return 'Cruce alcista';
+  if (prevDiff >= 0 && currDiff < 0) return 'Cruce bajista';
+  return 'Sin cruce';
+}
+
+function calculateMACDCross(closes) {
+  const ema12 = calculateEMA(closes, 12);
+  const ema26 = calculateEMA(closes, 26);
+  const macdLine = closes.map((_, index) => {
+    if (!Number.isFinite(ema12[index]) || !Number.isFinite(ema26[index])) {
+      return null;
+    }
+    return ema12[index] - ema26[index];
+  });
+
+  const validMacd = macdLine.filter(Number.isFinite);
+  const signalPartial = calculateEMA(validMacd, 9);
+
+  if (signalPartial.length < 2 || validMacd.length < 2) {
+    return 'Sin datos';
+  }
+
+  const prevMacd = validMacd[validMacd.length - 2];
+  const currMacd = validMacd[validMacd.length - 1];
+  const prevSignal = signalPartial[signalPartial.length - 2];
+  const currSignal = signalPartial[signalPartial.length - 1];
+
+  return detectCross(prevMacd, currMacd, prevSignal, currSignal);
+}
+
+function calculateEMACross(closes) {
+  const ema21 = calculateEMA(closes, 21);
+  const ema50 = calculateEMA(closes, 50);
+
+  if (ema21.length < 2 || ema50.length < 2) {
+    return 'Sin datos';
+  }
+
+  const prev21 = ema21[ema21.length - 2];
+  const curr21 = ema21[ema21.length - 1];
+  const prev50 = ema50[ema50.length - 2];
+  const curr50 = ema50[ema50.length - 1];
+
+  return detectCross(prev21, curr21, prev50, curr50);
 }
 
 function formatPair(symbol) {
-  if (symbol.endsWith('USDT')) {
-    return `${symbol.slice(0, -4)}/USDT`;
-  }
+  if (symbol.endsWith('USDT')) return `${symbol.slice(0, -4)}/USDT`;
   return symbol;
 }
 
-async function fetchSymbolData(symbol) {
-  const [tickerRes, klinesRes] = await Promise.all([
-    fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`),
-    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1d&limit=200`),
-  ]);
+function signalClass(text) {
+  if (text === 'Cruce alcista') return 'up';
+  if (text === 'Cruce bajista') return 'down';
+  return '';
+}
 
-  if (!tickerRes.ok || !klinesRes.ok) {
-    throw new Error(`No se pudo obtener ${symbol}`);
+function timeframeCell(data) {
+  if (!data) return 'Sin datos';
+
+  const rsiText = Number.isFinite(data.rsi) ? data.rsi.toFixed(2) : 'Sin datos';
+  const macdClass = signalClass(data.macdCross);
+  const emaClass = signalClass(data.emaCross);
+
+  return `<div class="tf-cell">
+    <div>RSI: <strong>${rsiText}</strong></div>
+    <div class="${macdClass}">MACD: ${data.macdCross}</div>
+    <div class="${emaClass}">EMA21/50: ${data.emaCross}</div>
+  </div>`;
+}
+
+async function fetchTimeframeIndicators(symbol, interval, lastPrice) {
+  const klinesRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=250`);
+
+  if (!klinesRes.ok) {
+    throw new Error(`No se pudo obtener ${symbol} ${interval}`);
   }
+
+  const klinesData = await klinesRes.json();
+  if (!Array.isArray(klinesData) || !klinesData.length) {
+    throw new Error(`Sin velas para ${symbol} ${interval}`);
+  }
+
+  const closes = klinesData.map((kline) => Number(kline[4])).filter((price) => Number.isFinite(price));
+  if (closes.length) {
+    closes[closes.length - 1] = lastPrice;
+  }
+
+  return {
+    rsi: calculateRSI(closes),
+    macdCross: calculateMACDCross(closes),
+    emaCross: calculateEMACross(closes),
+  };
+}
+
+async function fetchSymbolData(symbol) {
+  const tickerRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+  if (!tickerRes.ok) throw new Error(`No se pudo obtener ${symbol}`);
 
   const tickerData = await tickerRes.json();
-  const klinesData = await klinesRes.json();
-
-  if (!tickerData.symbol || !Array.isArray(klinesData) || !klinesData.length) {
-    throw new Error(`Par no encontrado: ${symbol}`);
-  }
+  if (!tickerData.symbol) throw new Error(`Par no encontrado: ${symbol}`);
 
   const lastPrice = Number(tickerData.price);
 
-  const dayOpen = Number(klinesData[klinesData.length - 1][1]);
-  const change1d = Number.isFinite(dayOpen) && dayOpen > 0
-    ? ((lastPrice - dayOpen) / dayOpen) * 100
-    : null;
+  const timeframeResults = await Promise.allSettled(
+    timeframes.map((tf) => fetchTimeframeIndicators(symbol, tf.interval, lastPrice)),
+  );
 
-  const closePrices = klinesData
-    .map((kline) => Number(kline[4]))
-    .filter((price) => Number.isFinite(price));
-
-  if (closePrices.length) {
-    closePrices[closePrices.length - 1] = lastPrice;
-  }
+  const timeframeMap = {};
+  timeframes.forEach((tf, index) => {
+    timeframeMap[tf.label] = timeframeResults[index].status === 'fulfilled'
+      ? timeframeResults[index].value
+      : null;
+  });
 
   return {
     symbol: tickerData.symbol,
     pairLabel: formatPair(tickerData.symbol),
     price: lastPrice,
-    dayOpen,
-    change1d,
-    rsi: calculateRSI(closePrices),
+    timeframes: timeframeMap,
   };
 }
 
 async function renderTable() {
   if (!trackedSymbols.length) {
-    tableBody.innerHTML = '<tr><td colspan="6">No hay pares configurados.</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="7">No hay pares configurados.</td></tr>';
     statusEl.textContent = 'Agrega un par para empezar (ej: BTC o BTCUSDT).';
     return;
   }
 
-  statusEl.textContent = `Actualizando ${trackedSymbols.length} pares desde Binance (1D)...`;
+  statusEl.textContent = `Actualizando ${trackedSymbols.length} pares con señales multi-timeframe...`;
   const results = await Promise.allSettled(trackedSymbols.map((symbol) => fetchSymbolData(symbol)));
 
   const rows = results
@@ -139,23 +247,20 @@ async function renderTable() {
       if (result.status === 'rejected') {
         return `<tr>
           <td>${formatPair(symbol)}</td>
-          <td colspan="4">Error al cargar datos</td>
+          <td colspan="5">Error al cargar datos</td>
           <td><button data-remove="${symbol}">Quitar</button></td>
         </tr>`;
       }
 
       const item = result.value;
-      const hasChange = Number.isFinite(item.change1d);
-      const changeClass = !hasChange || item.change1d >= 0 ? 'up' : 'down';
-      const changeSign = !hasChange || item.change1d >= 0 ? '+' : '';
-      const changeText = hasChange ? `${changeSign}${item.change1d.toFixed(2)}%` : 'Sin datos';
 
       return `<tr>
         <td>${item.pairLabel}</td>
         <td>$${item.price.toLocaleString('en-US', { maximumFractionDigits: 6 })}</td>
-        <td>$${item.dayOpen.toLocaleString('en-US', { maximumFractionDigits: 6 })}</td>
-        <td class="${changeClass}">${changeText}</td>
-        <td>${rsiBadge(item.rsi)}</td>
+        <td>${timeframeCell(item.timeframes['1D'])}</td>
+        <td>${timeframeCell(item.timeframes['4H'])}</td>
+        <td>${timeframeCell(item.timeframes['1H'])}</td>
+        <td>${timeframeCell(item.timeframes['15m'])}</td>
         <td><button data-remove="${item.symbol}">Quitar</button></td>
       </tr>`;
     })

@@ -142,3 +142,15 @@ tbody tr:last-child td {
     font-size: 0.88rem;
   }
 }
+
+
+.tf-cell {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 180px;
+  font-size: 0.82rem;
+}
+
+.tf-cell strong {
+  font-size: 0.9rem;
+}
