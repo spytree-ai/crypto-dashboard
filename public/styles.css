@@ -1,0 +1,183 @@
+:root {
+  color-scheme: dark;
+  --bg: #111827;
+  --card: #1f2937;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --up: #22c55e;
+  --down: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: linear-gradient(160deg, #0f172a, #111827);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+header h1 {
+  margin-bottom: 0.4rem;
+}
+
+header p {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.controls {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 1rem;
+}
+
+form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+input,
+button,
+select {
+  border-radius: 0.65rem;
+  border: 1px solid #374151;
+  background: #0b1220;
+  color: var(--text);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+input {
+  flex: 1;
+}
+
+button {
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.status {
+  margin: 0.5rem 0 1rem;
+  color: var(--muted);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(31, 41, 55, 0.86);
+  border: 1px solid #374151;
+  border-radius: 0.8rem;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 0.85rem;
+  border-bottom: 1px solid #374151;
+  text-align: left;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+.badge {
+  border-radius: 999px;
+  display: inline-block;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.8rem;
+  border: 1px solid #4b5563;
+}
+
+.badge.overbought {
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.badge.oversold {
+  color: #60a5fa;
+  border-color: #60a5fa;
+}
+
+.badge.neutral {
+  color: #34d399;
+  border-color: #34d399;
+}
+
+@media (max-width: 640px) {
+  th,
+  td {
+    padding: 0.65rem;
+    font-size: 0.88rem;
+  }
+}
+
+
+.tf-cell {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 180px;
+  font-size: 0.82rem;
+}
+
+.tf-cell strong {
+  font-size: 0.9rem;
+}
+
+.chart-section {
+  margin-top: 1.2rem;
+  background: rgba(31, 41, 55, 0.7);
+  border: 1px solid #374151;
+  border-radius: 0.8rem;
+  padding: 1rem;
+}
+
+.chart-section h2 {
+  margin-top: 0;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+
+canvas {
+  width: 100%;
+  background: #0b1220;
+  border: 1px solid #374151;
+  border-radius: 0.6rem;
+  margin-bottom: 0.7rem;
+}

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Crypto Dashboard</h1>
+        <p>
+          Monitorea cotizaciones multi-timeframe (1D, 4H, 1H, 15m) con RSI,
+          cruce MACD, cruce de precio vs EMA21/EMA50 y tendencia.
+        </p>
+      </header>
+
+      <section class="controls">
+        <form id="crypto-form">
+          <input
+            id="crypto-input"
+            type="text"
+            placeholder="Ej: BTC, ETH, SOL o BTCUSDT"
+            aria-label="Símbolo de Binance"
+            required
+          />
+          <button type="submit">Agregar</button>
+        </form>
+
+        <div class="actions">
+          <button id="refresh-btn" type="button">Actualizar ahora</button>
+          <label>
+            Actualización automática
+            <select id="interval-select">
+              <option value="15">Cada 15s</option>
+              <option value="30" selected>Cada 30s</option>
+              <option value="60">Cada 60s</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <p id="status" class="status">Cargando datos...</p>
+
+      <section>
+        <table>
+          <thead>
+            <tr>
+              <th>Par (Binance)</th>
+              <th>Precio (USD)</th>
+              <th>1D</th>
+              <th>4H</th>
+              <th>1H</th>
+              <th>15m</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="crypto-table-body"></tbody>
+        </table>
+      </section>
+
+      <section class="chart-section">
+        <h2>Gráfico técnico</h2>
+        <div class="chart-controls">
+          <label>
+            Par
+            <select id="chart-symbol-select"></select>
+          </label>
+          <label>
+            Timeframe
+            <select id="chart-timeframe-select">
+              <option value="1d">1D</option>
+              <option value="4h">4H</option>
+              <option value="1h">1H</option>
+              <option value="15m">15m</option>
+            </select>
+          </label>
+        </div>
+        <canvas id="price-chart" width="1200" height="320"></canvas>
+        <canvas id="indicator-chart" width="1200" height="220"></canvas>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
